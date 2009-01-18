@@ -1,7 +1,7 @@
-include ../../../support/include.mk
 
-all: $(ERL_OBJECTS)
+all: 
+	erl -make
 
 clean:
-	-rm $(ERL_OBJECTS)
+	-rm ../ebin/*
 

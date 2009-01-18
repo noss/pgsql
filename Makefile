@@ -1,7 +1,7 @@
 
 all:
-	(cd src;$(MAKE))
+	$(MAKE) -C src
 
 clean:
-	(cd src;$(MAKE) clean)
+	$(MAKE) -C src clean
 
