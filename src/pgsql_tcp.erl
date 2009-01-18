@@ -42,6 +42,6 @@ process_buffer(ProtoPid, Bin = <<Code:8/integer, Size:4/integer-unit:8, Rest/bin
 	true ->
 	    {ok, Bin}
     end;
-process_buffer(ProtoPid, Bin) when is_binary(Bin) ->
+process_buffer(_ProtoPid, Bin) when is_binary(Bin) ->
     {ok, Bin}.
 
