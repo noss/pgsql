@@ -4,4 +4,5 @@ all:
 
 clean:
 	-rm ../ebin/*
+	-rm *~
 

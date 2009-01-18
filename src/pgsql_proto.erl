@@ -161,7 +161,7 @@ setup(Sock, Params) ->
 	    deliver({pgsql_notice, Notice}),
 	    setup(Sock, Params);
 	%% Ready for Query, backend is ready for a new query cycle
-	{ready_for_query, Status} ->
+	{ready_for_query, _Status} ->
 	    deliver({pgsql_params, Params}),
 	    deliver(pgsql_connected),
 	    put(params, Params),
@@ -221,7 +221,7 @@ idle(Sock, Pid) ->
 		true ->
 		    RBPacket = encode_message(squery, "ROLLBACK"),
 		    ok = send(Sock, RBPacket),
-		    {ok, RBResult} = process_squery([]);
+		    {ok, _RBResult} = process_squery([]);
 		_ ->
 		    ok
 	    end,
@@ -289,7 +289,7 @@ idle(Sock, Pid) ->
 			{pgsql, {close_complete, _}} ->
 			    receive 
 				%% Collect response to sync message.
-				{pgsql, {ready_for_query, Status}} ->
+				{pgsql, {ready_for_query, _Status}} ->
 				    %%io:format("execute: ~p ~p ~p~n", 
 				    %%	      [Status, Command, Result]),
 				    Pid ! {pgsql, Ref, {Command, Result}},
@@ -325,11 +325,11 @@ process_squery(Log) ->
 	    process_squery([{Command, Types, Rows}|Log]);
 	{pgsql, {command_complete, Command}} ->
 	    process_squery([Command|Log]);
-	{pgsql, {ready_for_query, Status}} ->
+	{pgsql, {ready_for_query, _Status}} ->
 	    {ok, lists:reverse(Log)};
 	{pgsql, {error_message, Error}} ->
 	    process_squery([{error, Error}|Log]);
-	{pgsql, Any} ->
+	{pgsql, _Any} ->
 	    process_squery(Log)
     end.
 process_squery_cols(Types, Log) ->
@@ -405,10 +405,10 @@ process_execute(Sock, Ref, Pid) ->
     %% where Result = {Command, ...}
     receive
 	{pgsql, {no_data, _}} ->
-	    {ok, Command, Result} = process_execute_nodata();
+	    {ok, _Command, _Result} = process_execute_nodata();
 	{pgsql, {row_description, Descs}} ->
 	    {ok, Types} = pgsql_util:decode_descs(Descs),
-	    {ok, Command, Result} = 
+	    {ok, _Command, _Result} = 
 		process_execute_resultset(Sock, Ref, Pid, Types, []);
 		    
 	{pgsql, Unknown} ->
@@ -461,7 +461,7 @@ decode_packet(Code, Packet) ->
 	?PG_EMPTY_RESPONSE ->
 	    Ret(empty_response, []);
 	?PG_ROW_DESCRIPTION ->
-	    <<Columns:16/integer, ColDescs/binary>> = Packet,
+	    <<_Columns:16/integer, ColDescs/binary>> = Packet,
 	    Descs = coldescs(ColDescs, []),
 	    Ret(row_description, Descs);
 	?PG_READY_FOR_QUERY ->
@@ -501,13 +501,13 @@ decode_packet(Code, Packet) ->
 	?PG_CLOSE_COMPLETE ->
 	    Ret(close_complete, []);
 	$t ->
-	    <<NParams:16/integer, OidsP/binary>> = Packet,
+	    <<_NParams:16/integer, OidsP/binary>> = Packet,
 	    Oids = pgsql_util:oids(OidsP, []),
 	    Ret(parameter_description, Oids);
 	?PG_NO_DATA ->
 	    Ret(no_data, []);
 
-	Any ->
+	_Any ->
 	    Ret(unknown, [Code])
     end.
 
@@ -546,7 +546,7 @@ encode_message(parse, {Name, Query, _Oids}) ->
     StringName = string(Name),
     StringQuery = string(Query),
     encode($P, <<StringName/binary, StringQuery/binary, 0:16/integer>>);
-encode_message(bind, Bind={NamePortal, NamePrepared, 
+encode_message(bind, _Bind={NamePortal, NamePrepared, 
 			   Parameters, ResultFormats}) ->
     %%io:format("encode bind: ~p~n", [Bind]),
     PortalP = string(NamePortal),
@@ -554,7 +554,7 @@ encode_message(bind, Bind={NamePortal, NamePrepared,
     
     ParamFormatsList = lists:map(
 			 fun (Bin) when is_binary(Bin) -> <<1:16/integer>>; 
-			     (Text) -> <<0:16/integer>> end, 
+			     (_Text) -> <<0:16/integer>> end, 
 			 Parameters),
     ParamFormatsP = erlang:concat_binary(ParamFormatsList),
 
