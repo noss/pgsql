@@ -29,8 +29,7 @@
 -import(erlang, [md5/1]).
 -export([hexlist/2]).
 
--record(desc, {column, name, type, format, size, mod, table}).
-
+-include("pgsql.hrl").
 
 %% Lookup key in a plist stored in process dictionary under 'options'.
 %% Default is returned if there is no value for Key in the plist.

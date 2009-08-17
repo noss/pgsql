@@ -53,6 +53,8 @@
 -import(pgsql_util, [count_string/1, to_string/1]).
 -import(pgsql_util, [coldescs/2, datacoldescs/3]).
 
+-include("pgsql.hrl").
+
 deliver(Message) ->
     DriverPid = get(driver),
     DriverPid ! Message.
@@ -248,10 +250,10 @@ idle(Sock, Pid) ->
 	    send_message(Sock, sync, []),
 	    {ok, State, ParamDesc, ResultDesc} = process_prepare({[], []}),
 	    OidMap = get(oidmap),
- 	    ParamTypes = 
-		lists:map(fun (Oid) -> dict:fetch(Oid, OidMap) end, ParamDesc),
-	    ResultNameTypes = lists:map(fun ({ColName, _Format, _ColNo, Oid, _, _, _}) ->
-						{ColName, dict:fetch(Oid, OidMap)}
+            % XXX Should use OidMap at some point.
+ 	    ParamTypes = ParamDesc,
+	    ResultNameTypes = lists:map(fun (Desc) ->
+                                            {Desc#desc.name, Desc#desc.table}
 					end,
 					ResultDesc),
 	    Pid ! {pgsql, Ref, {prepared, State, ParamTypes, ResultNameTypes}},
