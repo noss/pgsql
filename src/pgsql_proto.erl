@@ -568,6 +568,11 @@ encode_message(bind, _Bind={NamePortal, NamePrepared,
 			   (Bin) when is_binary(Bin) -> 
 			       Size = size(Bin), 
 			       <<Size:32/integer, Bin/binary>>;
+			   (Float) when is_float(Float) ->
+			       List = float_to_list(Float),
+			       Bin = list_to_binary(List),
+			       Size = size(Bin),
+			       <<Size:32/integer, Bin/binary>>;
 			   (Integer) when is_integer(Integer) ->
 			       List = integer_to_list(Integer),
 			       Bin = list_to_binary(List),

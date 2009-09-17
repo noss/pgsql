@@ -257,8 +257,8 @@ decode_col(#desc{format=text, type=Float}, Value)
   when Float =:= float4; Float =:= float8 ->
     ListValue = binary_to_list(Value),          %% sometimes PostgreSQL returms "."-less floats!
     IsFloat   = string:str(ListValue,"."),      %% so
-    if IsFloat > 0 -> FValue = Value;           %% we are checking on that and
-       true        -> FValue = Value ++ ".0"    %% add the DOT ZERO if necessary
+    if IsFloat > 0 -> FValue = ListValue;           %% we are checking on that and
+       true        -> FValue = ListValue ++ ".0"    %% add the DOT ZERO if necessary
     end,
     list_to_float(FValue);
 decode_col(#desc{format=text, type=bool}, Value) ->
