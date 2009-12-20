@@ -1,0 +1,8 @@
+{['../src/*'], 
+ [debug_info, {d, 'TEST'}]}.
+
+{['*'],
+ [debug_info, {d, 'TEST'}]}.
+
+
+

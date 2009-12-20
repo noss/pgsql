@@ -1,7 +1,15 @@
 
+.PHONY: all test clean
+
 all:
-	$(MAKE) -C src
+	@cd src && erl -make
+
+test:
+	@cd test && erl -make
+	@erl -noshell -pa test \
+         -eval 'eunit:test({dir, "test"}, [verbose]).' \
+         -s init stop
 
 clean:
-	$(MAKE) -C src clean
-
+	rm -f ebin/*.beam
+	rm -f test/*.beam
