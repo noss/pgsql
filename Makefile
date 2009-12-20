@@ -2,6 +2,7 @@
 .PHONY: all test clean
 
 all:
+	cp -f pgsql.app.in ebin/pgsql.app
 	@cd src && erl -make
 
 test:
@@ -11,5 +12,5 @@ test:
          -s init stop
 
 clean:
-	rm -f ebin/*.beam
+	rm -f ebin/*.beam ebin/*.app
 	rm -f test/*.beam

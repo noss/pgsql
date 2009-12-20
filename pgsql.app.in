@@ -1,0 +1,8 @@
+{application, pgsql,
+        [{description, "PostgreSQL access library"},
+         {vsn, "0.1"},
+         {modules, []},
+         {registered, []},
+         {applications, [kernel, stdlib]},
+	 {env, []}]}.
+
