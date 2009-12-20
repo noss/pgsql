@@ -54,7 +54,7 @@ send_int(Sock, Int) ->
     Packet = <<Int:32/integer>>,
     gen_tcp:send(Sock, Packet).
 
-send_msg(Sock, Code, Packet) when binary(Packet) ->
+send_msg(Sock, Code, Packet) when is_binary(Packet) ->
     Len = size(Packet) + 4,
     Msg = <<Code:8/integer, Len:4/integer-unit:8, Packet/binary>>,
     gen_tcp:send(Sock, Msg).
@@ -89,9 +89,9 @@ string(String) ->
     <<Bin/binary, 0/integer>>.
 
 %%% Two zero terminated strings.
-make_pair(Key, Value) when atom(Key) ->
+make_pair(Key, Value) when is_atom(Key) ->
     make_pair(atom_to_list(Key), Value);
-make_pair(Key, Value) when atom(Value) ->
+make_pair(Key, Value) when is_atom(Value) ->
     make_pair(Key, atom_to_list(Value));
 make_pair(Key, Value) ->
     BinKey = list_to_binary(Key),
@@ -99,12 +99,12 @@ make_pair(Key, Value) ->
     <<BinKey/binary, 0/integer, 
      BinValue/binary, 0/integer>>.
 
-split_pair(Bin) when binary(Bin) ->
+split_pair(Bin) when is_binary(Bin) ->
     split_pair(binary_to_list(Bin));
 split_pair(Str)  ->
     split_pair_rec(Str, norec).
 
-split_pair_rec(Bin) when binary(Bin) ->
+split_pair_rec(Bin) when is_binary(Bin) ->
     split_pair_rec(binary_to_list(Bin));
 split_pair_rec(Arg)  ->
     split_pair_rec(Arg,[]).
@@ -124,7 +124,7 @@ split_pair_rec(S, Acc) ->
     end.
 
 
-count_string(Bin) when binary(Bin) ->
+count_string(Bin) when is_binary(Bin) ->
     count_string(Bin, 0).
 
 count_string(<<>>, N) ->
@@ -134,7 +134,7 @@ count_string(<<0/integer, Rest/binary>>, N) ->
 count_string(<<_C/integer, Rest/binary>>, N) ->
     count_string(Rest, N+1).
 
-to_string(Bin) when binary(Bin) ->    
+to_string(Bin) when is_binary(Bin) ->    
     {Count, _} = count_string(Bin, 0),
     <<String:Count/binary, _/binary>> = Bin,
     {binary_to_list(String), Count}.
@@ -347,7 +347,7 @@ pass_md5(User, Password, Salt) ->
 	Pass = ["md5", Encrypt, 0],
 	list_to_binary(Pass).
 
-hex(B) when binary(B) ->
+hex(B) when is_binary(B) ->
 	hexlist(binary_to_list(B), []).
 
 hexlist([], Acc) ->
