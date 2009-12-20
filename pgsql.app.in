@@ -1,7 +1,10 @@
 {application, pgsql,
         [{description, "PostgreSQL access library"},
          {vsn, "0.1"},
-         {modules, []},
+         {modules, [pgsql,
+                    pgsql_proto,
+                    pgsql_tcp,
+                    pgsql_util]},
          {registered, []},
          {applications, [kernel, stdlib]},
 	 {env, []}]}.
