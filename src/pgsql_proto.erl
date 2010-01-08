@@ -187,7 +187,7 @@ connected(Sock) ->
     end,
 
     %% Ready to start marshalling between frontend and backend.
-    idle(Sock, DriverPid).
+    ?MODULE:idle(Sock, DriverPid).
 
 %% In the idle state we should only be receiving requests from the 
 %% frontend. Async backend messages should be forwarded to responsible
@@ -198,7 +198,7 @@ idle(Sock, Pid) ->
 	%% idle state before a ready-for-query has been received.
 	{message, Message} ->
 	    io:format("Unexpected message when idle: ~p~n", [Message]),
-	    idle(Sock, Pid);
+	    ?MODULE:idle(Sock, Pid);
 
 	%% Socket closed or socket error messages.
 	{socket, Sock, Condition} ->
@@ -226,7 +226,7 @@ idle(Sock, Pid) ->
 		    ok
 	    end,
 	    Pid ! {pgsql, Ref, Result},
-	    idle(Sock, Pid);
+	    ?MODULE:idle(Sock, Pid);
 	%% Extended query
 	%% simplistic version using the unnammed prepared statement and portal.
 	{equery, Ref, Pid, {Query, Params}} ->
@@ -240,7 +240,7 @@ idle(Sock, Pid) ->
 	    {ok, Command, Desc, Status, Logs} = process_equery([]),
 
 	    Pid ! {pgsql, Ref, {Command, Status, Desc, Logs}},
-	    idle(Sock, Pid);
+	    ?MODULE:idle(Sock, Pid);
 	%% Prepare a statement, so it can be used for queries later on.
 	{prepare, Ref, Pid, {Name, Query}} ->
 	    send_message(Sock, parse, {Name, Query, []}),
@@ -249,20 +249,20 @@ idle(Sock, Pid) ->
 	    {ok, State, ParamDesc, ResultDesc} = process_prepare({[], []}),
 	    OidMap = get(oidmap),
  	    ParamTypes = 
-		lists:map(fun (Oid) -> dict:fetch(Oid, OidMap) end, ParamDesc),
-	    ResultNameTypes = lists:map(fun ({ColName, _Format, _ColNo, Oid, _, _, _}) ->
-						{ColName, dict:fetch(Oid, OidMap)}
+		lists:map(fun (Oid) -> pgsql_util:decode_oid(Oid) end, ParamDesc),
+	    ResultNameTypes = lists:map(fun ({desc, _ColNo, ColName, Oid, _Format, _Bytes, _Limit, _}) ->
+						{ColName, pgsql_util:decode_oid(Oid)}
 					end,
 					ResultDesc),
 	    Pid ! {pgsql, Ref, {prepared, State, ParamTypes, ResultNameTypes}},
-	    idle(Sock, Pid);
+	    ?MODULE:idle(Sock, Pid);
 	%% Close a prepared statement.
 	{unprepare, Ref, Pid, Name} ->
 	    send_message(Sock, close, {prepared_statement, Name}),
 	    send_message(Sock, sync, []),
 	    {ok, _Status} = process_unprepare(),
 	    Pid ! {pgsql, Ref, unprepared},
-	    idle(Sock, Pid);
+	    ?MODULE:idle(Sock, Pid);
 	%% Execute a prepared statement
 	{execute, Ref, Pid, {Name, Params}} ->
 	    %%io:format("execute: ~p ~p ~n", [Name, Params]),
@@ -293,7 +293,7 @@ idle(Sock, Pid) ->
 				    %%io:format("execute: ~p ~p ~p~n", 
 				    %%	      [Status, Command, Result]),
 				    Pid ! {pgsql, Ref, {Command, Result}},
-				    idle(Sock, Pid);
+				    ?MODULE:idle(Sock, Pid);
 				{pgsql, Unknown} ->
 				    exit(Unknown)
 			    end;
