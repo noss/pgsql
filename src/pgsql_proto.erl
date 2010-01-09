@@ -294,7 +294,7 @@ idle(Sock, Pid) ->
 				{pgsql, {ready_for_query, _Status}} ->
 				    %%io:format("execute: ~p ~p ~p~n", 
 				    %%	      [Status, Command, Result]),
-				    Pid ! {pgsql, Ref, {Command, Result}},
+				    Pid ! {pgsql, Ref, Result},
 				    ?MODULE:idle(Sock, Pid);
 				{pgsql, Unknown} ->
 				    exit(Unknown)
