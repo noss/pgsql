@@ -53,6 +53,8 @@
 -import(pgsql_util, [count_string/1, to_string/1]).
 -import(pgsql_util, [coldescs/2, datacoldescs/3]).
 
+-include("pgsql.hrl").
+
 deliver(Message) ->
     DriverPid = get(driver),
     DriverPid ! Message.
@@ -248,10 +250,10 @@ idle(Sock, Pid) ->
 	    send_message(Sock, sync, []),
 	    {ok, State, ParamDesc, ResultDesc} = process_prepare({[], []}),
 	    OidMap = get(oidmap),
- 	    ParamTypes = 
-		lists:map(fun (Oid) -> pgsql_util:decode_oid(Oid) end, ParamDesc),
-	    ResultNameTypes = lists:map(fun ({desc, _ColNo, ColName, Oid, _Format, _Bytes, _Limit, _}) ->
-						{ColName, pgsql_util:decode_oid(Oid)}
+            % XXX Should use OidMap at some point.
+ 	    ParamTypes = ParamDesc,
+	    ResultNameTypes = lists:map(fun (Desc) ->
+                                            {Desc#desc.name, Desc#desc.table}
 					end,
 					ResultDesc),
 	    Pid ! {pgsql, Ref, {prepared, State, ParamTypes, ResultNameTypes}},
@@ -565,6 +567,11 @@ encode_message(bind, _Bind={NamePortal, NamePrepared,
 			       <<Minus:32/integer>>;
 			   (Bin) when is_binary(Bin) -> 
 			       Size = size(Bin), 
+			       <<Size:32/integer, Bin/binary>>;
+			   (Float) when is_float(Float) ->
+			       List = float_to_list(Float),
+			       Bin = list_to_binary(List),
+			       Size = size(Bin),
 			       <<Size:32/integer, Bin/binary>>;
 			   (Integer) when is_integer(Integer) ->
 			       List = integer_to_list(Integer),

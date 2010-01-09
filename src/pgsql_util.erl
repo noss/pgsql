@@ -30,8 +30,7 @@
 -import(erlang, [md5/1]).
 -export([hexlist/2]).
 
--record(desc, {column, name, type, format, size, mod, table}).
-
+-include("pgsql.hrl").
 
 %% Lookup key in a plist stored in process dictionary under 'options'.
 %% Default is returned if there is no value for Key in the plist.
@@ -259,7 +258,12 @@ decode_col(#desc{format=text, type=bpchar}, Value) ->
     Value;
 decode_col(#desc{format=text, type=Float}, Value) 
   when Float =:= float4; Float =:= float8 ->
-    list_to_float(binary_to_list(Value));
+    ListValue = binary_to_list(Value),          %% sometimes PostgreSQL returms "."-less floats!
+    IsFloat   = string:str(ListValue,"."),      %% so
+    if IsFloat > 0 -> FValue = ListValue;           %% we are checking on that and
+       true        -> FValue = ListValue ++ ".0"    %% add the DOT ZERO if necessary
+    end,
+    list_to_float(FValue);
 decode_col(#desc{format=text, type=bool}, Value) ->
     case Value of 
 	<<"t">> -> true;
