@@ -241,12 +241,12 @@ decode_oid(Oid) ->
 
 
 decode_row(Types, Values) ->
-    decode_row(Types, Values, []).
+    decode_row(Types, Values, {}).
 decode_row([], [], Out) ->
-    {ok, lists:reverse(Out)};
+    {ok, Out};
 decode_row([Type|TypeTail], [Value|ValueTail], Out0) ->
     Out1 = decode_col(Type, Value),
-    decode_row(TypeTail, ValueTail, [Out1|Out0]).
+    decode_row(TypeTail, ValueTail, erlang:append_element(Out0, Out1)).
 
 decode_col(_, null) ->
     null;
@@ -254,7 +254,9 @@ decode_col(#desc{format=text, type=Int}, Value)
   when Int =:= int2; Int =:= int4; Int =:= int8 ->
     list_to_integer(binary_to_list(Value));
 decode_col(#desc{format=text, type=varchar}, Value) ->
-    binary_to_list(Value);
+    Value;
+decode_col(#desc{format=text, type=bpchar}, Value) ->
+    Value;
 decode_col(#desc{format=text, type=Float}, Value) 
   when Float =:= float4; Float =:= float8 ->
     list_to_float(binary_to_list(Value));
