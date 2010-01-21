@@ -239,9 +239,9 @@ idle(Sock, Pid) ->
 	    SyncP =     encode_message(sync, []),
 	    ok = send(Sock, [ParseP, BindP, DescribeP, ExecuteP, SyncP]),
 
-	    {ok, Command, Desc, Status, Logs} = process_equery([]),
+	    {ok, Result} = process_equery([]),
 
-	    Pid ! {pgsql, Ref, {Command, Status, Desc, Logs}},
+	    Pid ! {pgsql, Ref, Result},
 	    ?MODULE:idle(Sock, Pid);
 	%% Prepare a statement, so it can be used for queries later on.
 	{prepare, Ref, Pid, {Name, Query}} ->
@@ -355,6 +355,10 @@ process_equery(Log) ->
 	{pgsql, {row_description, Descs}} ->
 	    {ok, Descs1} = pgsql_util:decode_descs(Descs),
 	    process_equery_datarow(Descs1, Log, {undefined, Descs, undefined});
+	{pgsql, {ready_for_query, _Status}} ->
+	    {ok, lists:reverse(Log)};
+	{pgsql, {error_message, Error}} ->
+	    process_equery([{error, Error}|Log]);
 	{pgsql, Any} ->
 	    process_equery([Any|Log])
     end.
@@ -365,7 +369,7 @@ process_equery_datarow(Types, Log, Info={Command, Desc, Status}) ->
 	{pgsql, {command_complete, Command1}} ->
 	    process_equery_datarow(Types, Log, {Command1, Desc, Status});
 	{pgsql, {ready_for_query, Status1}} ->
-	    {ok, Command, Desc, Status1, lists:reverse(Log)};
+	    {ok, {Command, Desc, Status1, lists:reverse(Log)}};
 	{pgsql, {data_row, Row}} ->
 	    {ok, DecodedRow} = pgsql_util:decode_row(Types, Row),
 	    process_equery_datarow(Types, [DecodedRow|Log], Info);

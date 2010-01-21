@@ -97,8 +97,10 @@ pquery(Db, Query, Params) ->
     Ref = make_ref(),
     Db ! {equery, Ref, self(), {Query, Params}},
     receive
-	{pgsql, Ref, {Command, Status, NameTypes, Rows}} ->
-	    {ok, Command, Status, NameTypes, Rows}
+        {pgsql, Ref, {Command, Status, NameTypes, Rows}} ->
+	        {ok, Command, Status, NameTypes, Rows};
+        {pgsql, Ref, Result} ->
+            {ok, Result}
     after 5000 ->
 	    timeout
     end.
