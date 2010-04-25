@@ -556,7 +556,7 @@ encode_message(bind, _Bind={NamePortal, NamePrepared,
 			 fun (Bin) when is_binary(Bin) -> <<1:16/integer>>; 
 			     (_Text) -> <<0:16/integer>> end, 
 			 Parameters),
-    ParamFormatsP = erlang:concat_binary(ParamFormatsList),
+    ParamFormatsP = erlang:list_to_binary(ParamFormatsList),
 
     NParameters = length(Parameters),
     ParametersList = lists:map(
@@ -577,14 +577,14 @@ encode_message(bind, _Bind={NamePortal, NamePrepared,
 			       <<Size:32/integer, Bin/binary>>
 		       end,
 		       Parameters),
-    ParametersP = erlang:concat_binary(ParametersList),
+    ParametersP = erlang:list_to_binary(ParametersList),
     
     NResultFormats = length(ResultFormats),
     ResultFormatsList = lists:map(
 			  fun (binary) -> <<1:16/integer>>;
 			      (text) ->	  <<0:16/integer>> end, 
 			  ResultFormats),
-    ResultFormatsP = erlang:concat_binary(ResultFormatsList),
+    ResultFormatsP = erlang:list_to_binary(ResultFormatsList),
     
     %%io:format("encode bind: ~p~n", [{PortalP, PreparedP, 
 	%%			     NParameters, ParamFormatsP,
