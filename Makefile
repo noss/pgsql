@@ -7,6 +7,7 @@ all:
 
 test:
 	escript test/squery.escript test/test.config
+	escript test/pquery.escript test/test.config
 #	@cd test && erl -make
 #	@erl -noshell -pa test \
 #         -eval 'eunit:test({dir, "test"}, [verbose]).' \
