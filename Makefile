@@ -6,10 +6,11 @@ all:
 	@cd src && erl -make
 
 test:
-	@cd test && erl -make
-	@erl -noshell -pa test \
-         -eval 'eunit:test({dir, "test"}, [verbose]).' \
-         -s init stop
+	escript test/squery.escript test/test.config
+#	@cd test && erl -make
+#	@erl -noshell -pa test \
+#         -eval 'eunit:test({dir, "test"}, [verbose]).' \
+#         -s init stop
 
 clean:
 	rm -f ebin/*.beam ebin/*.app
