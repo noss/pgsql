@@ -36,8 +36,9 @@ connect(Options) ->
     receive
 	{pgsql_error, Reason} ->
 	    exit(Reason);
-	{pgsql_params, Params} ->
-	    io:format("Params: ~p~n", [Params])
+	{pgsql_params, _Params} ->
+	    ok
+	    %%io:format("Params: ~p~n", [Params])
     end,
     %% Confirmation we're connected successfully.
     receive
