@@ -19,8 +19,7 @@ main([ConfigFile]) ->
     [pgsql:execute(Db, insert, [A, B]) || {A,B} <- ABs],
 
     {ok, Result} = pgsql:execute(Db, select, [42]),
-    {'SELECT', [Row]} = Result,
-    ["Hello", 42] = Row,
+    [{<<"Hello">>, 42}] = Result,
 
     erlang:display({success, escript:script_name()}),
     ok.

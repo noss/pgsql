@@ -15,7 +15,7 @@ main([ConfigFile]) ->
     idle = Status,
     [_ColA, _ColB] = Cols,
     [Row] = Rows,
-    ["Hello", 42] = Row,
+    {<<"Hello">>, 42} = Row,
 
     erlang:display({success, escript:script_name()}),
     ok.

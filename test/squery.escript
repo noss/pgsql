@@ -12,7 +12,7 @@ main([ConfigFile]) ->
     [Response] = Responses, % Only one query issued
     {"SELECT", _Columns, Rows} = Response,
     [Row] = Rows, % Should only be one row in result
-    ["Hello", 42] = Row,
+    {<<"Hello">>, 42} = Row,
     erlang:display({success, escript:script_name()}),
     ok.
 
