@@ -104,7 +104,7 @@ connect(Sock) ->
 
 authenticate(Sock) ->
     %% Await authentication request from backend.
-    {ok, Code, Packet} = recv_msg(Sock, 5000),
+    {ok, Code, Packet} = recv_msg(Sock, ?TIMEOUT),
     {ok, Value} = decode_packet(Code, Packet),
     case Value of
 	%% Error response
@@ -141,7 +141,7 @@ authenticate(Sock) ->
 
 setup(Sock, Params) ->
     %% Receive startup messages until ReadyForQuery
-    {ok, Code, Package} = recv_msg(Sock, 5000),
+    {ok, Code, Package} = recv_msg(Sock, ?TIMEOUT),
     {ok, Pair} = decode_packet(Code, Package),
     case Pair of
 	%% BackendKeyData, necessary for issuing cancel requests

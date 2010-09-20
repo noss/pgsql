@@ -12,10 +12,13 @@
 
 -export([squery/2, 
 	 pquery/3, 
+	 pquery/4,
 	 terminate/1, 
 	 prepare/3, unprepare/2, 
-	 execute/3]).
+	 execute/3,
+	 execute/4]).
 
+-include("pgsql.hrl").
 
 connect(Host, Database, User, Password) ->
     connect([{database, Database},
@@ -55,7 +58,7 @@ terminate(Db) ->
     receive
 	{pgsql, Ref, terminated} ->
 	    ok
-    after 5000 ->
+    after ?TIMEOUT ->
 	    timeout
     end.
 
@@ -92,7 +95,11 @@ squery(Db, Query) ->
 %%% Status = idle | transaction | failed_transaction
 %%% NameTypes = [{ColName, ColType}]
 %%% Rows = [list()]
-pquery(Db, Query, Params) ->
+pquery(Db, Query, Params) -> pquery(Db, Query, Params, ?TIMEOUT).
+
+%%% pquery(Db, Query, Params, Timeout) -> {ok, Command, Status, NameTypes, Rows} | timeout | ...
+%%% Timeout = int()
+pquery(Db, Query, Params, Timeout) ->
     %%io:format("equery: ~p~n", [Query]),
     Ref = make_ref(),
     Db ! {equery, Ref, self(), {Query, Params}},
@@ -101,7 +108,7 @@ pquery(Db, Query, Params) ->
 	        {ok, Command, Status, NameTypes, Rows};
         {pgsql, Ref, Result} ->
             {ok, Result}
-    after 5000 ->
+    after Timeout ->
 	    timeout
     end.
 
@@ -115,7 +122,7 @@ prepare(Db, Name, Query) when is_atom(Name) ->
     receive
 	{pgsql, Ref, {prepared, State, ParamDesc, ResultDesc}} ->
 	    {ok, State, ParamDesc, ResultDesc}
-    after 5000 ->
+    after ?TIMEOUT ->
 	    timeout
     end.
 
@@ -127,7 +134,7 @@ unprepare(Db, Name) when is_atom(Name) ->
     receive
 	{pgsql, Ref, unprepared} ->
 	    ok
-    after 5000 ->
+    after ?TIMEOUT ->
 	    timeout
     end.
 
@@ -138,12 +145,16 @@ unprepare(Db, Name) when is_atom(Name) ->
 %%%          ...
 %%% ResultSet = [Row]
 %%% Row = list()
-execute(Db, Name, Params) when is_atom(Name), is_list(Params) ->
+execute(Db, Name, Params) -> execute(Db, Name, Params, ?TIMEOUT).
+
+%%% execute(Db, Name, Params, Timeout) -> {ok, Result} | timeout | ...
+%%% Timeout = int()
+execute(Db, Name, Params, Timeout) when is_atom(Name), is_list(Params) ->
     Ref = make_ref(),
     Db ! {execute, Ref, self(), {atom_to_list(Name), Params}},
     receive
 	{pgsql, Ref, Result} ->
 	    {ok, Result}
-    after 5000 ->
+    after Timeout ->
 	    timeout
     end.

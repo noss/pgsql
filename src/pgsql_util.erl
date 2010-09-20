@@ -46,7 +46,7 @@ option(Key, Default) ->
 
 %% Open a TCP connection
 socket({tcp, Host, Port}) ->
-    gen_tcp:connect(Host, Port, [{active, false}, binary, {packet, raw}], 5000).
+    gen_tcp:connect(Host, Port, [{active, false}, binary, {packet, raw}], ?TIMEOUT).
 
 send(Sock, Packet) ->
     gen_tcp:send(Sock, Packet).
