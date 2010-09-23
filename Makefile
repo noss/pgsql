@@ -1,5 +1,14 @@
 
-.PHONY: all test clean
+.PHONY: all test clean install
+
+VERSION = $(shell sed -n '/vsn/ {s/.*,\s*"\([0-9][0-9.]*\)".*/\1/; p}' \
+                      pgsql.app.in)
+
+PREFIX   ?= /usr
+ERL_ROOT  = $(PREFIX)/lib/erlang
+LIBDIR    = /lib
+DISTDIR   = pgsql-$(VERSION)
+
 
 all:
 	cp -f pgsql.app.in ebin/pgsql.app
@@ -17,3 +26,9 @@ test:
 clean:
 	rm -f ebin/*.beam ebin/*.app
 	rm -f test/*.beam
+
+install:
+	# create dist directory
+	mkdir -p $(DESTDIR)$(ERL_ROOT)$(LIBDIR)/$(DISTDIR)
+	# copy and install files
+	cp -a ebin $(DESTDIR)$(ERL_ROOT)$(LIBDIR)/$(DISTDIR)
